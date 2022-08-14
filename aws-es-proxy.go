@@ -90,6 +90,7 @@ type proxy struct {
 	realm           string
 	remoteTerminate bool
 	assumeRole      string
+	profile         string
 }
 
 func newProxy(args ...interface{}) *proxy {
@@ -122,6 +123,7 @@ func newProxy(args ...interface{}) *proxy {
 		realm:           args[9].(string),
 		remoteTerminate: args[10].(bool),
 		assumeRole:      args[11].(string),
+		profile:         args[12].(string),
 	}
 }
 
@@ -197,12 +199,28 @@ func (p *proxy) parseEndpoint() error {
 func (p *proxy) getSigner() *v4.Signer {
 	// Refresh credentials after expiration. Required for STS
 	if p.credentials == nil {
-		sess, err := session.NewSession(
-			&aws.Config{
-				Region:                        aws.String(p.region),
-				CredentialsChainVerboseErrors: aws.Bool(true),
-			},
-		)
+		var sess *session.Session
+		var err error
+		config := aws.Config{
+			Region:                        aws.String(p.region),
+			CredentialsChainVerboseErrors: aws.Bool(true),
+		}
+
+		if strings.TrimSpace(p.profile) == "" {
+			sess, err = session.NewSession(
+				&aws.Config{
+					Region:                        aws.String(p.region),
+					CredentialsChainVerboseErrors: aws.Bool(true),
+				},
+			)
+		} else {
+			sess, err = session.NewSessionWithOptions(
+				session.Options{
+					Profile: p.profile,
+					Config:  config,
+				},
+			)
+		}
 		if err != nil {
 			logrus.Debugln(err)
 		}
@@ -476,6 +494,7 @@ func main() {
 		timeout         int
 		remoteTerminate bool
 		assumeRole      string
+		profile         string
 	)
 
 	flag.StringVar(&endpoint, "endpoint", "", "Amazon ElasticSearch Endpoint (e.g: https://dummy-host.eu-west-1.es.amazonaws.com)")
@@ -493,6 +512,7 @@ func main() {
 	flag.StringVar(&realm, "realm", "", "Authentication Required")
 	flag.BoolVar(&remoteTerminate, "remote-terminate", false, "Allow HTTP remote termination")
 	flag.StringVar(&assumeRole, "assume", "", "Optionally specify role to assume")
+	flag.StringVar(&profile, "profile", "", "Optionally specify an AWS Credentials Profile")
 	flag.Parse()
 
 	if endpoint == "" {
@@ -540,6 +560,7 @@ func main() {
 		realm,
 		remoteTerminate,
 		assumeRole,
+		profile,
 	)
 
 	if err = p.parseEndpoint(); err != nil {

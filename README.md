@@ -1,5 +1,8 @@
 # aws-es-proxy
 
+This is an updated version of the original [https://github.com/abutaha/aws-es-proxy](https://github.com/abutaha/aws-es-proxy) repository.
+It adds a new option `-profile` to set an optional AWS Credentials Profile name.
+
 [![Docker Pulls](https://img.shields.io/docker/pulls/abutaha/aws-es-proxy.svg)](https://hub.docker.com/r/abutaha/aws-es-proxy/)
 
 **aws-es-proxy** is a small web server application sitting between your HTTP client (browser, curl, etc...) and Amazon Elasticsearch service. It will sign your requests using latest [AWS Signature Version 4](http://docs.aws.amazon.com/general/latest/gr/signature-version-4.html) before sending the request to Amazon Elasticsearch. When response is back from Amazon Elasticsearch, this response will be sent back to your HTTP client.
@@ -140,6 +143,8 @@ Usage of ./aws-es-proxy:
         HTTP Basic Auth Password
   -pretty
         Prettify verbose and file output
+  -profile
+        AWS Credentials Profile name
   -realm string
         Authentication Required
   -remote-terminate
