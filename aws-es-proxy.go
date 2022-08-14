@@ -480,7 +480,6 @@ func copyHeaders(dst, src http.Header) {
 				dst.Add(k, v)
 			}
 		}
-
 	}
 }
 
